@@ -1,7 +1,7 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from .commands import start, help_command, echo
 import logging
 import os
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from .commands import start, help_command, echo
 
 
 def main():
@@ -13,14 +13,14 @@ def main():
     updater = Updater(token, use_context=True)
 
     # Get the dispatcher to register handlers
-    dp = updater.dispatcher
+    dispatcher = updater.dispatcher
 
     # on different commands - answer in Telegram
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CommandHandler("help", help_command))
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CommandHandler("help", help_command))
 
     # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
 
     # Start the Bot
     updater.start_polling()
