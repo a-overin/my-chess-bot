@@ -17,4 +17,9 @@ def echo(update: Update):
 
 def start_game(update: Update):
     game_maker = GameMaker()
-    game_maker.get_game_for_chat_room(update.message.chat.id)
+    game_maker.create_game(update.message.chat.id, update.message.from_user.id)
+
+
+def accept_game(update: Update):
+    game_maker = GameMaker()
+    game_maker.accept_game(update.message.chat.id, update.message.from_user.id)

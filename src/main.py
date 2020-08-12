@@ -1,7 +1,7 @@
 import logging
 import os
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from .commands import start, help_command, echo
+from .commands import start, help_command, echo, start_game, accept_game
 
 
 def main():
@@ -18,6 +18,8 @@ def main():
     # on different commands - answer in Telegram
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
+    dispatcher.add_handler(CommandHandler("start_game", start_game))
+    dispatcher.add_handler(CommandHandler("accept_game", accept_game))
 
     # on noncommand i.e message - echo the message on Telegram
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))

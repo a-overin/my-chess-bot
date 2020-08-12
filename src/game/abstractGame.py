@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from .gameDao import GameDao
-from .figure.AbstractFigure import AbstractFigure
-from .GameBoard import GameBoard
+from .figure import abstractFigure
+from .gameBoard import GameBoard
 
 
 class AbstractGame(ABC):
@@ -21,7 +21,7 @@ class AbstractGame(ABC):
         # проверяем может ли ходить данный пользователь
         pass
 
-    def make_turn(self, user_id: int, figure: AbstractFigure, new_position: str) -> bool:
+    def make_turn(self, user_id: int, figure: abstractFigure, new_position: str) -> bool:
         if not self.user_turn(user_id):
             return False
         return True
