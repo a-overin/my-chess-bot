@@ -1,4 +1,4 @@
-from game.figure.abstractFigure import AbstractFigure
+from ..figure.abstractFigure import AbstractFigure
 
 
 class GameBoard:
