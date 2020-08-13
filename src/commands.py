@@ -13,26 +13,32 @@ DEVELOPER_CHAT_ID = os.environ.get('developer_chat_id')
 
 
 # Здесь описываем команды
-def start(update: Update):
-    update.message.reply_text('Hi!')
+def start(update: Update, context: CallbackContext):
+    context.bot.send_message(chat_id=update.message.chat.id,
+                             reply_to_message_id=update.message.message_id,
+                             text="Hi")
 
 
-def help_command(update: Update):
-    update.message.reply_text('help!')
-
-
-def echo(update: Update):
-    update.message.reply_text(update.message.text)
+def help_command(update: Update, context: CallbackContext):
+    context.bot.send_message(chat_id=update.message.chat.id,
+                             reply_to_message_id=update.message.message_id,
+                             text="help")
 
 
 def start_game(update: Update, context: CallbackContext):
     game_maker = GameMaker()
     game_maker.create_game(update.message.chat.id, update.message.from_user.id)
+    context.bot.send_message(chat_id=update.message.chat.id,
+                             reply_to_message_id=update.message.message_id,
+                             text="start_game")
 
 
 def accept_game(update: Update, context: CallbackContext):
     game_maker = GameMaker()
     game_maker.accept_game(update.message.chat.id, update.message.from_user.id)
+    context.bot.send_message(chat_id=update.message.chat.id,
+                             reply_to_message_id=update.message.message_id,
+                             text="accept_game")
 
 
 def error_handler(update: Update, context: CallbackContext):

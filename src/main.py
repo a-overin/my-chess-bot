@@ -1,7 +1,7 @@
 import logging
 import os
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from .commands import start, help_command, echo, start_game, accept_game, error_handler
+from telegram.ext import Updater, CommandHandler
+from .commands import start, help_command, start_game, accept_game, error_handler
 
 
 def main():
@@ -22,7 +22,7 @@ def main():
     dispatcher.add_handler(CommandHandler("accept_game", accept_game))
 
     # on noncommand i.e message - echo the message on Telegram
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+    # dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
 
     dispatcher.add_error_handler(error_handler)
 
