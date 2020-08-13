@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from .gameDao import GameDao
 from .figure import abstractFigure
-from game.board.gameBoard import GameBoard
+from .board.gameBoard import GameBoard
 
 
 class AbstractGame(ABC):
