@@ -1,7 +1,7 @@
 import logging
 import os
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from .commands import start, help_command, echo, start_game, accept_game
+from .commands import start, help_command, echo, start_game, accept_game, error_handler
 
 
 def main():
@@ -23,6 +23,8 @@ def main():
 
     # on noncommand i.e message - echo the message on Telegram
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
+
+    dispatcher.add_error_handler(error_handler)
 
     # Start the Bot
     updater.start_polling()
