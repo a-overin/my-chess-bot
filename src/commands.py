@@ -6,6 +6,7 @@ import traceback
 from telegram import Update, ParseMode
 from telegram.ext import CallbackContext
 from .game.gameMaker import GameMaker
+from .user.userService import UserService
 
 logger = logging.getLogger(__name__)
 
@@ -14,31 +15,48 @@ DEVELOPER_CHAT_ID = os.environ.get('developer_chat_id')
 
 # Здесь описываем команды
 def start(update: Update, context: CallbackContext):
-    context.bot.send_message(chat_id=update.message.chat.id,
-                             reply_to_message_id=update.message.message_id,
-                             text="Hi")
+    service = UserService()
+    text = "Service unavailable"
+    try:
+        if service.check_user(update.message.from_user.id):
+            text = "Welcome, you are registered!"
+        else:
+            text = "Sorry, you are not registered!"
+    except Exception as e:
+        logger.error("error while check user", e)
+        context.bot.send_message(chat_id=update.message.chat.id,
+                                 text=text)
+        raise
+    else:
+        context.bot.send_message(chat_id=update.message.chat.id,
+                                 text=text)
 
 
 def help_command(update: Update, context: CallbackContext):
+    service = UserService()
+    if service.check_user(update.message.from_user.id):
+        text = "Information: " + str(service.get_user(update.message.from_user.id))
+    else:
+        text = "Sorry, you are not registered!"
     context.bot.send_message(chat_id=update.message.chat.id,
-                             reply_to_message_id=update.message.message_id,
-                             text="help")
+                             text=text)
 
 
 def start_game(update: Update, context: CallbackContext):
     game_maker = GameMaker()
-    game_maker.create_game(update.message.chat.id, update.message.from_user.id)
+    game = game_maker.create_game(update.message.chat.id, update.message.from_user.id)
+    text = "Game created, id = " + str(game.get("id"))
     context.bot.send_message(chat_id=update.message.chat.id,
                              reply_to_message_id=update.message.message_id,
-                             text="start_game")
+                             text=text)
 
 
 def accept_game(update: Update, context: CallbackContext):
     game_maker = GameMaker()
-    game_maker.accept_game(update.message.chat.id, update.message.from_user.id)
+    game = game_maker.accept_game(update.message.chat.id, update.message.from_user.id)
+    # todo высылать доску, добавлять кнопки фигурами которых можно ходить
     context.bot.send_message(chat_id=update.message.chat.id,
-                             reply_to_message_id=update.message.message_id,
-                             text="accept_game")
+                             text="Game successfully accepted")
 
 
 def error_handler(update: Update, context: CallbackContext):
