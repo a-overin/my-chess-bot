@@ -6,16 +6,18 @@ from PIL import Image
 
 class Utils:
 
-    def __init__(self, cell_size: int = 81, board_size_x: int = 53, board_size_y: int = 55) -> None:
+    def __init__(self, cell_size: int, board_size_x: int, board_size_y: int) -> None:
         self._image_host = os.environ.get("CLOUDCUBE_URL") + "/public"
         self._cell_size = cell_size
         self._border_size_x = board_size_x
         self._border_size_y = board_size_y
 
-    def get_image(self, path: str):
+    def get_image(self, path: str, need_resize: bool = False):
         board_path = self._image_host + path
         response = requests.get(board_path)
         image = Image.open(BytesIO(response.content)).convert("RGBA")
+        if need_resize:
+            image = image.resize((self._cell_size-1, self._cell_size-1))
         return image
 
     def set_position(self, board, figure, position: str):

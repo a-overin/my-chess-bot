@@ -2,7 +2,7 @@ from .abstractGame import AbstractGame
 from .standartGame import StandardGame
 from .gameSettings import GameStatuses, GameType
 from .gameDao import GameDao
-from .board.gameBoard import GameBoard
+from .board.gameBoard import GameBoard, BoardPictureTypeStandard, BoardPictureTypeBlackWhite
 from ..exceptions import GameNotFoundException
 from datetime import datetime as dt
 import random
@@ -20,7 +20,8 @@ class GameMaker:
         positions = self.game_dao. get_table_positions(find_game.get("id"))
         positions = positions.get("table_position") or positions.get("table_start_position")
         board = GameBoard(find_game.get("game_type"),
-                          GameBoard.get_position_from_json(positions))
+                          GameBoard.get_position_from_json(positions),
+                          BoardPictureTypeBlackWhite())
         player_list = self.game_dao.get_game_users(find_game.get("id"))
         game = StandardGame(find_game.get("id"),
                             board,
