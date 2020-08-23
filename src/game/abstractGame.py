@@ -17,11 +17,11 @@ class AbstractGame(ABC):
         return user_id in self.gamers
 
     @abstractmethod
-    def user_turn(self, user_id: int) -> bool:
+    def check_user_turn(self, user_id: int) -> bool:
         # проверяем может ли ходить данный пользователь
         pass
 
     def make_turn(self, user_id: int, figure: abstractFigure, new_position: str) -> bool:
-        if not self.user_turn(user_id):
+        if not self.check_user_turn(user_id):
             return False
         return True

@@ -1,6 +1,6 @@
 import os
-import psycopg2
 import logging
+import psycopg2
 
 
 class UserDao:
@@ -18,9 +18,9 @@ class UserDao:
         try:
             cur.execute(self.sql_create_user, {"user_id": user_id})
             self.connect.commit()
-        except psycopg2.Error as e:
+        except psycopg2.Error as error:
             self.connect.rollback()
-            logging.error("error while create user", e)
+            logging.error(error)
         finally:
             if cur is not None:
                 cur.close()
@@ -32,10 +32,9 @@ class UserDao:
             data = cur.fetchall()
             if len(data) > 0:
                 return data[0]
-            else:
-                return None
-        except psycopg2.Error as e:
-            logging.error("error while get user", e)
+            return []
+        except psycopg2.Error as error:
+            logging.error(error)
         finally:
             if cur is not None:
                 cur.close()

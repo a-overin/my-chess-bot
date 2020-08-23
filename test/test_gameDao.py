@@ -14,7 +14,7 @@ class TestGameDao(unittest.TestCase):
         self.dao = GameDao()
 
     def test_get_game_for_room(self):
-        game = self.dao.get_game_for_room(-1, GameStatuses.started())
+        game = self.dao.get_game_for_room(-1)
         print(game)
         assert len(game) == 0
 
