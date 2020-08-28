@@ -1,7 +1,7 @@
 import json
 from datetime import datetime as dt
 from .imageUtils import Utils
-from ..figure.abstractFigure import AbstractFigure
+from ..figure.abstractFigure import AbstractFigure, Cell
 
 
 class BoardPictureTypeStandard:
@@ -63,11 +63,22 @@ class GameBoard:
         print("file " + str(dt.now() - n))
         return file
 
-    def figure_delete(self, position) -> bool:
+    def figure_delete(self, position: Cell) -> bool:
         # удаляем фигуру споля
-        pass
+        if self.figure_positions.get(position.get_position()) is not None:
+            del self.figure_positions[position.get_position()]
+            return True
+        else:
+            return False
 
-    def figure_add(self, figure: AbstractFigure) -> bool:
+    def figure_add(self, figure: AbstractFigure, color: str, position: Cell) -> bool:
         # ставим фигуру на поле
-        pass
+        if figure.can_move(position):
+            self.figure_positions[position.get_position()] = color + figure.get_type_id()[1]
+            return True
+        else:
+            return False
+
+    def get_figures_for_color(self, color: str) -> list:
+        return [pos for pos, fig in self.figure_positions.items() if fig[0].lower() == color.lower()]
 

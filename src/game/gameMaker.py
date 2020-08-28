@@ -1,3 +1,4 @@
+import logging
 from .abstractGame import AbstractGame
 from .standartGame import StandardGame
 from .gameSettings import GameStatuses, GameType
@@ -6,6 +7,8 @@ from .board.gameBoard import GameBoard, BoardPictureTypeStandard, BoardPictureTy
 from ..exceptions import GameNotFoundException
 from datetime import datetime as dt
 import random
+
+logger = logging.getLogger(__name__)
 
 
 class GameMaker:
@@ -17,8 +20,8 @@ class GameMaker:
         find_game = self.game_dao.get_game_for_room(room_id)
         if len(find_game) == 0:
             raise GameNotFoundException()
-        positions = self.game_dao. get_table_positions(find_game.get("id"))
-        positions = positions.get("table_position") or positions.get("table_start_position")
+        table_positions_info = self.game_dao.get_table_positions(find_game.get("id"))
+        positions = table_positions_info.get("table_position")
         board = GameBoard(find_game.get("game_type"),
                           GameBoard.get_position_from_json(positions),
                           BoardPictureTypeBlackWhite())
@@ -26,7 +29,10 @@ class GameMaker:
         game = StandardGame(find_game.get("id"),
                             board,
                             player_list,
-                            find_game.get("game_status"))
+                            find_game.get("game_status"),
+                            table_positions_info.get("turn_number"),
+                            table_positions_info.get("user_id"),
+                            table_positions_info.get("user_color"))
         return game
 
     def accept_game(self, room_id: int, user_id: int) -> AbstractGame:

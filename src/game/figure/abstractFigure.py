@@ -6,27 +6,27 @@ class FigureTypes:
 
     @classmethod
     def king(cls):
-        return 0
+        return 0, 'K'
 
     @classmethod
     def queen(cls):
-        return 1
+        return 1, 'Q'
 
     @classmethod
     def rook(cls):
-        return 2
+        return 2, 'R'
 
     @classmethod
     def bishop(cls):
-        return 3
+        return 3, 'B'
 
     @classmethod
     def knight(cls):
-        return 4
+        return 4, 'N'
 
     @classmethod
     def pawn(cls):
-        return 5
+        return 5, 'P'
 
 
 class AbstractFigure(ABC):
@@ -39,7 +39,6 @@ class AbstractFigure(ABC):
         # Проверяем может ли фигура пойти на новую позицию
         pass
 
-    @classmethod
     @abstractmethod
-    def get_type_id(cls) -> int:
+    def get_type_id(self) -> tuple:
         pass
