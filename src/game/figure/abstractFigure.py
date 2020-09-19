@@ -31,8 +31,10 @@ class FigureTypes:
 
 class AbstractFigure(ABC):
 
-    def __init__(self, position: Cell) -> None:
+    def __init__(self, position: Cell, color: str) -> None:
         self.cell = position
+        self.color = color
+        self.text = "Color:{color}, Position:{position}, Type:{type}"
 
     @abstractmethod
     def can_move(self, new_position: Cell) -> bool:
@@ -42,3 +44,15 @@ class AbstractFigure(ABC):
     @abstractmethod
     def get_type_id(self) -> tuple:
         pass
+
+    def __str__(self) -> str:
+        return self.text.format(color="white" if self.color == 'w' else "black",
+                                position=self.cell,
+                                type=self.__class__.__name__)
+
+    def __repr__(self) -> str:
+        return self.text.format(color="white" if self.color == 'w' else "black",
+                                position=self.cell,
+                                type=self.__class__.__name__)
+
+

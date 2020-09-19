@@ -1,7 +1,11 @@
 import json
 from datetime import datetime as dt
+from typing import List
+from itertools import product
+
+from ...exceptions import FigureNotFoundException
 from .imageUtils import Utils
-from ..figure.abstractFigure import AbstractFigure, Cell
+from ..figure.standardFigure import standard_figures, AbstractFigure, Cell
 
 
 class BoardPictureTypeStandard:
@@ -25,11 +29,18 @@ class BoardPictureTypeBlackWhite(BoardPictureTypeStandard):
 
 class GameBoard:
 
-    def __init__(self, board_type: int, figure_positions: dict, board_picture: BoardPictureTypeStandard, max_letter='H', max_number=8) -> None:
+    def __init__(self, board_type: int,
+                 figure_positions: dict,
+                 board_picture: BoardPictureTypeStandard,
+                 max_letter='H',
+                 max_number=8) -> None:
         self.type = board_type
         self.figure_positions = figure_positions
         self.max_letter = max_letter
         self.max_number = max_number
+        self.all_cells = [Cell(i[0], int(i[1])) for i in product([chr(i) for i in range(ord('a'),
+                                                                                        ord(self.max_letter.lower())+1)],
+                                                                 [str(i) for i in range(1, self.max_number+1)])]
         self.board_picture = board_picture
         self.figure_path = "/chess_figures/merida/{}.png"
 
@@ -71,10 +82,10 @@ class GameBoard:
         else:
             return False
 
-    def figure_add(self, figure: AbstractFigure, color: str, position: Cell) -> bool:
+    def figure_add(self, figure: AbstractFigure, position: Cell) -> bool:
         # ставим фигуру на поле
         if figure.can_move(position):
-            self.figure_positions[position.get_position()] = color + figure.get_type_id()[1]
+            self.figure_positions[position.get_position()] = figure.color + figure.get_type_id()[1]
             return True
         else:
             return False
@@ -82,3 +93,11 @@ class GameBoard:
     def get_figures_for_color(self, color: str) -> list:
         return [pos for pos, fig in self.figure_positions.items() if fig[0].lower() == color.lower()]
 
+    def get_figure(self, position: Cell) -> AbstractFigure:
+        figure = self.figure_positions.get(position.get_position())
+        if figure is None:
+            raise FigureNotFoundException(position)
+        return standard_figures.get(figure[1])(position, figure[0])
+
+    def get_all_cells(self) -> List[Cell]:
+        return self.all_cells

@@ -47,10 +47,10 @@ class Rook(AbstractFigure):
         return True
 
     def get_type_id(self) -> tuple:
-        return  FigureTypes.rook()
+        return FigureTypes.rook()
 
 
-standard_figures = {
+standard_figures: {str: AbstractFigure} = {
     FigureTypes.queen()[1]: Queen,
     FigureTypes.knight()[1]: Knight,
     FigureTypes.rook()[1]: Rook,

@@ -16,4 +16,7 @@ class GameSavePositionException(ChessException):
         super().__init__("Error while save positions")
 
 
+class FigureNotFoundException(ChessException):
 
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)

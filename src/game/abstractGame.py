@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import logging
 from .gameDao import GameDao
 from .figure.abstractFigure import Cell
-from .figure.standardFigure import standard_figures
+from .figure.standardFigure import standard_figures, AbstractFigure
 from .board.gameBoard import GameBoard
 
 logger = logging.getLogger(__name__)
@@ -29,18 +29,18 @@ class AbstractGame(ABC):
         pass
 
     def make_turn(self, user_id: int, old_position: Cell, new_position: Cell) -> bool:
-        # if not self.check_user_turn(user_id):
-        #     return False
+        if not self.check_user_turn(user_id):
+            return False
         if self.board.figure_positions.get(old_position.get_position()) is None:
             return False
         logger.debug(self.board.figure_positions)
         fig = self.board.figure_positions.get(old_position.get_position())
         logger.debug(old_position.get_position())
         logger.debug(fig)
-        fig = standard_figures.get(fig[1])(old_position)
+        fig = standard_figures.get(fig[1])(old_position, 'w' if self.user_color else 'b')
         if fig.can_move(new_position):
             self.board.figure_delete(old_position)
-            self.board.figure_add(fig, 'w' if self.user_color else 'b', new_position)
+            self.board.figure_add(fig, new_position)
         else:
             return False
         self.dao.save_table_positions(self.id,
@@ -54,4 +54,16 @@ class AbstractGame(ABC):
         return pos
 
     def get_available_for_position(self, position: Cell) -> list:
-        return ['h6', 'd4']
+        fig = self.board.get_figure(position)
+        all_cells = self.board.get_all_cells()
+        result = []
+        for cell in all_cells:
+            if self.validate_move(fig, cell):
+                result.append(cell.get_position())
+        return result
+
+    @staticmethod
+    def validate_move(fig: AbstractFigure, cell: Cell) -> bool:
+        return fig.can_move(cell)
+
+

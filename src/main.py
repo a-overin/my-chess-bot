@@ -22,9 +22,9 @@ def main():
         entry_points=[CommandHandler("accept_game", accept_game),
                       CommandHandler("game", game_for_room)],
         states={
-            START: [MessageHandler(Filters.regex('^[a-h][1-8]$'), set_start)],
+            START: [MessageHandler(Filters.regex('^[a-hA-H][1-8]$'), set_start)],
 
-            END: [MessageHandler(Filters.regex('^[a-h][1-8]$'), make_turn)]
+            END: [MessageHandler(Filters.regex('^[a-hA-H][1-8]$'), make_turn)]
         },
         fallbacks=[MessageHandler(Filters.regex('change start'), set_start)],
         name="game_conv",
