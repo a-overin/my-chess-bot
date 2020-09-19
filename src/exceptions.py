@@ -1,10 +1,19 @@
-class GameNotFoundException(Exception):
+class ChessException(Exception):
+
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+
+
+class GameNotFoundException(ChessException):
 
     def __init__(self) -> None:
         super(GameNotFoundException, self).__init__("Game not found")
 
 
-class GameSavePositionException(Exception):
+class GameSavePositionException(ChessException):
 
     def __init__(self) -> None:
         super().__init__("Error while save positions")
+
+
+

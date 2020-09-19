@@ -5,6 +5,7 @@ import os
 import traceback
 from telegram import Update, ParseMode, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import CallbackContext
+from .exceptions import ChessException
 from .game.gameMaker import GameMaker
 from .game.figure.abstractFigure import Cell
 from .user.user_service import UserService
@@ -24,11 +25,15 @@ def start(update: Update, context: CallbackContext):
             text = "Welcome, you are registered!"
         else:
             text = "Sorry, you are not registered!"
+    except ChessException as error:
+        logger.error(error)
+        context.bot.send_message(chat_id=update.message.chat.id,
+                                 text=str(error))
     except Exception as error:
         logger.error(error)
         context.bot.send_message(chat_id=update.message.chat.id,
                                  text=text)
-        raise
+        raise error
     else:
         context.bot.send_message(chat_id=update.message.chat.id,
                                  text=text)
@@ -48,9 +53,10 @@ def game_for_room(update: Update, context: CallbackContext):
     try:
         game_maker = GameMaker()
         game = game_maker.get_game_for_chat_room(update.message.chat.id)
-    except Exception as error:
+    except ChessException as error:
         logger.error(error)
-        raise
+        context.bot.send_message(chat_id=update.message.chat.id,
+                                 text=str(error))
     else:
         text, markup = get_message_for_room(game, context, update)
         context.bot.send_photo(chat_id=update.message.chat.id,
@@ -65,9 +71,10 @@ def set_start(update: Update, context: CallbackContext):
     try:
         game_maker = GameMaker()
         game = game_maker.get_game_for_chat_room(update.message.chat.id)
-    except Exception as error:
+    except ChessException as error:
         logger.error(error)
-        raise
+        context.bot.send_message(chat_id=update.message.chat.id,
+                                 text=str(error))
     else:
         if game.check_user_turn(update.message.from_user.id):
             start_pos = update.message.text
@@ -90,9 +97,10 @@ def make_turn(update: Update, context: CallbackContext):
     try:
         game_maker = GameMaker()
         game = game_maker.get_game_for_chat_room(update.message.chat.id)
-    except Exception as error:
+    except ChessException as error:
         logger.error(error)
-        raise
+        context.bot.send_message(chat_id=update.message.chat.id,
+                                 text=str(error))
     else:
         if game.check_user_turn(update.message.from_user.id):
             start_pos = context.chat_data.get('start_pos')
@@ -114,9 +122,10 @@ def start_game(update: Update, context: CallbackContext):
     try:
         game_maker = GameMaker()
         game = game_maker.create_game(update.message.chat.id, update.message.from_user.id)
-    except Exception as error:
+    except ChessException as error:
         logger.error(error)
-        raise
+        context.bot.send_message(chat_id=update.message.chat.id,
+                                 text=str(error))
     else:
         context.bot.send_message(chat_id=update.message.chat.id,
                                  reply_to_message_id=update.message.message_id,
@@ -127,7 +136,7 @@ def accept_game(update: Update, context: CallbackContext):
     try:
         game_maker = GameMaker()
         game = game_maker.accept_game(update.message.chat.id, update.message.from_user.id)
-    except Exception as error:
+    except ChessException as error:
         logger.error(error)
         context.bot.send_message(chat_id=update.message.chat.id,
                                  text=str(error))

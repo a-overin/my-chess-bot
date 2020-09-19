@@ -1,10 +1,11 @@
 import logging
+
 from .abstractGame import AbstractGame
 from .standartGame import StandardGame
 from .gameSettings import GameStatuses, GameType
 from .gameDao import GameDao
 from .board.gameBoard import GameBoard, BoardPictureTypeStandard, BoardPictureTypeBlackWhite
-from ..exceptions import GameNotFoundException
+from ..exceptions import GameNotFoundException, ChessException
 from datetime import datetime as dt
 import random
 
@@ -39,10 +40,10 @@ class GameMaker:
         game = self.get_game_for_chat_room(room_id)
         # принимаем игру
         if game.status != GameStatuses.created():
-            raise Exception("Game already start")
+            raise ChessException("Game already start")
         users = self.game_dao.get_game_users(game.id)
         if user_id in [user.get("user_id") for user in users]:
-            raise Exception("You are already in game")
+            raise ChessException("You are already in game")
         color = self.get_user_color(users)
         self.game_dao.add_user_for_game(game.id, user_id, color)
         self.game_dao.edit_game(game.id, GameStatuses.started(), dt.now())
@@ -51,7 +52,7 @@ class GameMaker:
     def create_game(self, room_id: int, user_id: int) -> AbstractGame:
         try:
             self.get_game_for_chat_room(room_id)
-            raise Exception("Game already created")
+            raise ChessException("Game already created")
         except GameNotFoundException:
             pass
         game_id = self.game_dao.create_game_for_room(room_id, GameType.standard())
@@ -59,7 +60,7 @@ class GameMaker:
             color = self.get_user_color([])
             self.game_dao.add_user_for_game(game_id, user_id, color)
         else:
-            raise Exception("Cannot create game")
+            raise ChessException("Cannot create game")
         game = self.get_game_for_chat_room(room_id)
         return game
 
