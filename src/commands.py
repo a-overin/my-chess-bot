@@ -81,7 +81,10 @@ def set_start(update: Update, context: CallbackContext):
             context.chat_data['start_pos'] = start_pos
             pos = game.get_available_for_position(Cell(start_pos[0], start_pos[1]))
             buttons = [KeyboardButton(pos) for pos in pos]
-            markup = ReplyKeyboardMarkup.from_row(buttons, resize_keyboard=True, selective=True, one_time_keyboard=True)
+            markup = ReplyKeyboardMarkup.from_row(buttons,
+                                                  resize_keyboard=True,
+                                                  selective=True,
+                                                  one_time_keyboard=True)
             logger.info(context.chat_data.get("mess_id"))
             context.bot.send_message(chat_id=update.message.chat.id,
                                      text="select end pos",
@@ -185,5 +188,8 @@ def get_message_for_room(game, context, update):
     user = context.bot.get_chat_member(update.message.chat.id, game.user_turn).user
     text = "Game id {}, turn number {}, wait user {}".format(game.id, game.turn_number, user.name)
     buttons = [KeyboardButton(pos) for pos in game.get_figures_position_for_color(game.user_color)]
-    markup = ReplyKeyboardMarkup.from_row(buttons, resize_keyboard=True, selective=True, one_time_keyboard=True)
+    markup = ReplyKeyboardMarkup.from_row(buttons,
+                                          resize_keyboard=True,
+                                          selective=True,
+                                          one_time_keyboard=True)
     return text, markup
