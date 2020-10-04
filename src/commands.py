@@ -3,12 +3,13 @@ import json
 import logging
 import os
 import traceback
-from itertools import groupby
+import numpy
 from telegram import Update, ParseMode, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import CallbackContext
+
+from .game.abstractGame import AbstractGame
 from .exceptions import ChessException
 from .game.gameMaker import GameMaker
-from .game.figure.abstractFigure import Cell
 from .user.user_service import UserService
 
 logger = logging.getLogger(__name__)
@@ -71,19 +72,19 @@ def game_for_room(update: Update, context: CallbackContext):
 def set_start(update: Update, context: CallbackContext):
     try:
         game_maker = GameMaker()
-        game = game_maker.get_game_for_chat_room(update.message.chat.id)
+        game: AbstractGame = game_maker.get_game_for_chat_room(update.message.chat.id)
     except ChessException as error:
         logger.error(error)
         context.bot.send_message(chat_id=update.message.chat.id,
                                  text=str(error))
     else:
         if game.check_user_turn(update.message.from_user.id):
-            start_pos = update.message.text
-            context.chat_data['start_pos'] = start_pos
-            markup = make_keyboard(game.get_available_for_position(Cell(start_pos[0], start_pos[1])))
+            figure = update.message.text
+            context.chat_data['figure'] = figure
+            markup = make_keyboard(game.get_available_for_figure(figure=figure), True)
             logger.info(context.chat_data.get("mess_id"))
             context.bot.send_message(chat_id=update.message.chat.id,
-                                     text="select end pos",
+                                     text="select turn",
                                      reply_to_message_id=update.message.message_id,
                                      reply_markup=markup
                                      )
@@ -102,13 +103,12 @@ def make_turn(update: Update, context: CallbackContext):
                                  text=str(error))
     else:
         if game.check_user_turn(update.message.from_user.id):
-            start_pos = context.chat_data.get('start_pos')
-            end_pos = update.message.text
-            game.make_turn(update.message.from_user.id,
-                           Cell.from_str(start_pos),
-                           Cell.from_str(end_pos))
+            turn = update.message.text
+            game.make_turn(update.message.from_user.id, turn)
             game = game_maker.get_game_for_chat_room(update.message.chat.id)
             text, markup = get_message_for_room(game, context, update)
+            if game.board.board.is_game_over():
+                text = game.get_results()
             context.bot.send_photo(chat_id=update.message.chat.id,
                                    caption=text,
                                    photo=game.board.get_picture(),
@@ -151,6 +151,23 @@ def accept_game(update: Update, context: CallbackContext):
         return START
 
 
+def change_piece(update: Update, context: CallbackContext):
+    try:
+        game_maker = GameMaker()
+        game = game_maker.get_game_for_chat_room(update.message.chat.id)
+        markup = make_keyboard(game.get_figures_for_move())
+    except ChessException as error:
+        logger.error(error)
+        context.bot.send_message(chat_id=update.message.chat.id,
+                                 text=str(error))
+        raise
+    context.bot.send_message(chat_id=update.message.chat.id,
+                             text="Change piece",
+                             reply_to_message_id=update.message.message_id,
+                             reply_markup=markup)
+    return START
+
+
 def error_handler(update: Update, context: CallbackContext):
     """Log the error and send a telegram message to notify the developer."""
     # Log the error before we do anything else, so we can see it even if something breaks.
@@ -183,16 +200,29 @@ def error_handler(update: Update, context: CallbackContext):
 def get_message_for_room(game, context, update):
     user = context.bot.get_chat_member(update.message.chat.id, game.user_turn).user
     text = "Game id {}, turn number {}, wait user {}".format(game.id, game.turn_number, user.name)
-    markup = make_keyboard(game.get_figures_position_for_color(game.user_color))
+    text = text + "\nLast move: " + game.board.get_last_move()
+    markup = make_keyboard(game.get_figures_for_move())
     return text, markup
 
 
-def make_keyboard(rows: list) -> ReplyKeyboardMarkup:
+def make_keyboard(rows: set, fl_need_back: bool = False) -> ReplyKeyboardMarkup:
+    grouped = grouper(rows, 5)
     buttons = []
-    for k, row in groupby(rows, lambda x: x[0]):
+    for row in grouped:
         buttons.append([KeyboardButton(cell) for cell in row])
-    markup = ReplyKeyboardMarkup(buttons,
-                                 resize_keyboard=True,
-                                 selective=True,
-                                 one_time_keyboard=True)
+    if fl_need_back:
+        buttons.append([KeyboardButton("Change piece")])
+        markup = ReplyKeyboardMarkup(buttons,
+                                     resize_keyboard=True,
+                                     selective=True,
+                                     one_time_keyboard=True)
+    else:
+        markup = ReplyKeyboardMarkup(buttons,
+                                     resize_keyboard=True,
+                                     selective=True,
+                                     one_time_keyboard=True)
     return markup
+
+
+def grouper(iterable, n):
+    return [i.tolist() for i in numpy.array_split(list(iterable), len(iterable)//n + 1)]

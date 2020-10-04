@@ -1,9 +1,11 @@
 import logging
 import os
+import re
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
 from .commands import start, help_command, start_game, accept_game, error_handler,\
-    game_for_room, make_turn, set_start
+    game_for_room, make_turn, set_start, change_piece
 from .persist import MyPersistence
+from chess import UNICODE_PIECE_SYMBOLS, SAN_REGEX
 
 
 def main():
@@ -17,18 +19,18 @@ def main():
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
-
+    SAN_REGEX = re.compile(r"^(O?(\-O){1,2}[\+#]?)?(([NBKRQ])?([a-h])?([1-8])?[\-x]?([a-h][1-8])(=?[nbrqkNBRQK])?[\+#]?)?\Z")
     start_conv, end_conv = range(2)
-
+    unicode_figures = "|".join([fig for fig in UNICODE_PIECE_SYMBOLS.values()])
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("accept_game", accept_game),
                       CommandHandler("game", game_for_room)],
         states={
-            start_conv: [MessageHandler(Filters.regex('^[a-hA-H][1-8]$'), set_start)],
+            start_conv: [MessageHandler(Filters.regex('^('+unicode_figures+')$'), set_start)],
 
-            end_conv: [MessageHandler(Filters.regex('^[a-hA-H][1-8]$'), make_turn)]
+            end_conv: [MessageHandler(Filters.regex(SAN_REGEX), make_turn)]
         },
-        fallbacks=[MessageHandler(Filters.regex('change start'), set_start)],
+        fallbacks=[MessageHandler(Filters.regex('Change piece'), change_piece)],
         name="game_conv",
         persistent=True,
         allow_reentry=True

@@ -21,19 +21,18 @@ class GameMaker:
         find_game = self.game_dao.get_game_for_room(room_id)
         if len(find_game) == 0:
             raise GameNotFoundException()
-        table_positions_info = self.game_dao.get_table_positions(find_game.get("id"))
-        positions = table_positions_info.get("table_position")
+        table_moves_history = self.game_dao.get_table_positions(find_game.get("id"))
         board = GameBoard(find_game.get("game_type"),
-                          GameBoard.get_position_from_json(positions),
+                          GameBoard.get_game_from_moves(table_moves_history),
                           BoardPictureTypeBlackWhite())
         player_list = self.game_dao.get_game_users(find_game.get("id"))
         game = StandardGame(find_game.get("id"),
                             board,
                             player_list,
                             find_game.get("game_status"),
-                            table_positions_info.get("turn_number"),
-                            table_positions_info.get("user_id"),
-                            table_positions_info.get("user_color"))
+                            table_moves_history[-1][4],
+                            table_moves_history[-1][2],
+                            table_moves_history[-1][3])
         return game
 
     def accept_game(self, room_id: int, user_id: int) -> AbstractGame:

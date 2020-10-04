@@ -1,9 +1,10 @@
 from abc import ABC, abstractmethod
+from datetime import datetime as dt
 import logging
+from chess import Piece, UNICODE_PIECE_SYMBOLS
 from .gameDao import GameDao
-from .figure.abstractFigure import Cell
-from .figure.standardFigure import standard_figures, AbstractFigure
 from .board.gameBoard import GameBoard
+from .gameSettings import GameStatuses
 
 logger = logging.getLogger(__name__)
 
@@ -28,39 +29,43 @@ class AbstractGame(ABC):
         # проверяем может ли ходить данный пользователь
         pass
 
-    def make_turn(self, user_id: int, old_position: Cell, new_position: Cell) -> bool:
+    def make_turn(self, user_id: int, turn: str) -> bool:
         if not self.check_user_turn(user_id):
             return False
-        fig: AbstractFigure = self.board.get_figure(old_position)
-        if fig is None:
-            return False
-        logger.debug(self.board.figure_positions)
-        logger.debug(old_position.get_position())
-        logger.debug(fig)
-        if self.validate_move(fig, new_position):
-            self.board.figure_delete(old_position)
-            self.board.figure_add(fig, new_position)
-        else:
+        try:
+            save_turn = self.board.board.push_san(turn)
+        except ValueError as error:
+            logger.error(error)
             return False
         self.dao.save_table_positions(self.id,
                                       self.turn_number + 1,
                                       self.user_turn,
-                                      GameBoard.get_json_from_positions(self.board.figure_positions))
+                                      save_turn.uci())
+        if self.board.board.is_game_over():
+            # ``1 - 0``, ``0 - 1`` or ``1 / 2 - 1 / 2``
+            result = self.board.board.result()
+            if result == "1 - 0":
+                self.dao.edit_game(self.id, GameStatuses.white_win(), end_time=dt.now())
+            elif result == "0 - 1":
+                self.dao.edit_game(self.id, GameStatuses.black_win(), end_time=dt.now())
+            else:
+                self.dao.edit_game(self.id, GameStatuses.draw(), end_time=dt.now())
         return True
 
-    def get_figures_position_for_color(self, color: bool) -> list:
-        pos = self.board.get_figures_for_color('w' if color else 'b')
-        return pos
+    def get_figures_for_move(self) -> set:
+        return self.board.get_figures_move()
 
-    def get_available_for_position(self, position: Cell) -> list:
-        fig = self.board.get_figure(position)
-        all_cells = self.board.get_all_cells()
-        result = []
-        for cell in all_cells:
-            if self.validate_move(fig, cell):
-                result.append(cell.get_position())
-        return result
+    def get_available_for_figure(self, figure: str) -> set:
+        piece = Piece.from_symbol([k for k, v in UNICODE_PIECE_SYMBOLS.items() if v == figure][0])
+        return self.board.get_move_for_figure(piece)
 
-    @abstractmethod
-    def validate_move(self, fig: AbstractFigure, new_cell: Cell) -> bool:
-        pass
+    def get_results(self) -> str:
+        if self.board.board.is_game_over():
+            # ``1 - 0``, ``0 - 1`` or ``1 / 2 - 1 / 2``
+            result = self.board.board.result()
+            if result == "1 - 0":
+                return "White win"
+            elif result == "0 - 1":
+                return "Black win"
+            else:
+                return "Draw"
