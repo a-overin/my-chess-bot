@@ -99,13 +99,14 @@ class GameBoard:
     def figure_add(self, figure: AbstractFigure, position: Cell) -> bool:
         # ставим фигуру на поле
         if figure.can_move(position):
-            self.figure_positions[position.get_position()] = figure.color + figure.get_type_id()[1]
+            figure.cell = position
+            self.figure_positions[position.get_position()] = figure
             return True
         else:
             return False
 
     def get_figures_for_color(self, color: str) -> list:
-        return [pos for pos, fig in self.figure_positions.items() if fig[0].lower() == color.lower()]
+        return [pos for pos, fig in self.figure_positions.items() if fig.color.lower() == color.lower()]
 
     def get_figure(self, position: Cell) -> AbstractFigure or None:
         figure = self.figure_positions.get(position.get_position())
