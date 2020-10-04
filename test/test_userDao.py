@@ -6,4 +6,4 @@ class TestUserDao(TestCase):
 
     def test_get_user(self):
         dao = UserDao()
-        print(dao.get_user(1))
+        assert len(dao.get_user(1)) == 0

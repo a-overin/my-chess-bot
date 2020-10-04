@@ -1,3 +1,4 @@
+import json
 from abc import ABC, abstractmethod
 from ..board.boardCell import Cell
 
@@ -31,10 +32,10 @@ class FigureTypes:
 
 class AbstractFigure(ABC):
 
-    def __init__(self, position: Cell, color: str) -> None:
+    def __init__(self, position: Cell, color: str, is_moved: bool = True) -> None:
         self.cell = position
         self.color = color
-        self.text = "Color:{color}, Position:{position}, Type:{type}"
+        self.is_moved = is_moved
 
     @abstractmethod
     def can_move(self, new_position: Cell) -> bool:
@@ -45,14 +46,17 @@ class AbstractFigure(ABC):
     def get_type_id(self) -> tuple:
         pass
 
+    def get_str_for_file(self) -> str:
+        return self.color + self.get_type_id()[1]
+
     def __str__(self) -> str:
-        return self.text.format(color="white" if self.color == 'w' else "black",
-                                position=self.cell,
-                                type=self.__class__.__name__)
+        text = "Color:{color}, Position:{position}, Type:{type}, Moved:{is_moved}"
+        return text.format(color="white" if self.color == 'w' else "black",
+                           position=str(self.cell),
+                           type=self.__class__.__name__,
+                           is_moved=self.is_moved)
 
     def __repr__(self) -> str:
-        return self.text.format(color="white" if self.color == 'w' else "black",
-                                position=self.cell,
-                                type=self.__class__.__name__)
-
-
+        result = {k: repr(v) for k, v in self.__dict__.items()}
+        result["type"] = self.get_type_id()[1]
+        return json.dumps(result)

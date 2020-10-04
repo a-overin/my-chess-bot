@@ -1,3 +1,6 @@
+import json
+
+
 class Cell:
     def __init__(self, letter: str, number: int) -> None:
         # буква клетки
@@ -16,6 +19,16 @@ class Cell:
         return self.letter.upper() + str(self.number)
 
     def __repr__(self) -> str:
-        return self.letter.upper() + str(self.number)
+        return json.dumps(self.__dict__)
+
+    def __hash__(self) -> int:
+        return hash(self.letter + str(self.number))
+
+    def __eq__(self, o: object) -> bool:
+        return self.__hash__() == o.__hash__()
+
+
+
+
 
 

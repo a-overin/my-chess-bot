@@ -31,14 +31,13 @@ class AbstractGame(ABC):
     def make_turn(self, user_id: int, old_position: Cell, new_position: Cell) -> bool:
         if not self.check_user_turn(user_id):
             return False
-        if self.board.figure_positions.get(old_position.get_position()) is None:
+        fig: AbstractFigure = self.board.get_figure(old_position)
+        if fig is None:
             return False
         logger.debug(self.board.figure_positions)
-        fig = self.board.figure_positions.get(old_position.get_position())
         logger.debug(old_position.get_position())
         logger.debug(fig)
-        fig = standard_figures.get(fig[1])(old_position, 'w' if self.user_color else 'b')
-        if fig.can_move(new_position):
+        if self.validate_move(fig, new_position):
             self.board.figure_delete(old_position)
             self.board.figure_add(fig, new_position)
         else:
@@ -62,8 +61,6 @@ class AbstractGame(ABC):
                 result.append(cell.get_position())
         return result
 
-    @staticmethod
-    def validate_move(fig: AbstractFigure, cell: Cell) -> bool:
-        return fig.can_move(cell)
-
-
+    @abstractmethod
+    def validate_move(self, fig: AbstractFigure, new_cell: Cell) -> bool:
+        pass

@@ -3,7 +3,6 @@ from datetime import datetime as dt
 from typing import List
 from itertools import product
 
-from ...exceptions import FigureNotFoundException
 from .imageUtils import Utils
 from ..figure.standardFigure import standard_figures, AbstractFigure, Cell
 
@@ -39,20 +38,35 @@ class GameBoard:
         self.max_letter = max_letter
         self.max_number = max_number
         self.all_cells = [Cell(i[0], int(i[1])) for i in product([chr(i) for i in range(ord('a'),
-                                                                                        ord(self.max_letter.lower())+1)],
-                                                                 [str(i) for i in range(1, self.max_number+1)])]
+                                                                                        ord(
+                                                                                            self.max_letter.lower()) + 1)],
+                                                                 [str(i) for i in range(1, self.max_number + 1)])]
         self.board_picture = board_picture
         self.figure_path = "/chess_figures/merida/{}.png"
 
     @classmethod
     def get_json_from_positions(cls, positions: dict) -> str:
         # получаем json из словаря позиций
-        return json.dumps(positions)
+        return json.dumps({k: repr(v) for k, v in positions.items()})
 
     @classmethod
     def get_position_from_json(cls, pos: str) -> dict:
         # получаем позиции из json'a
-        return json.loads(pos)
+        result = {}
+        positions = json.loads(pos)
+        for k, v in positions.items():
+            try:
+                value = json.loads(v)
+            except json.decoder.JSONDecodeError:
+                result[k] = standard_figures.get(v[1])(Cell(k[0], k[1]), v[0])
+            else:
+                if value.get("is_moved", None) is not None:
+                    result[k] = standard_figures.get(value.get("type"))(Cell(k[0], k[1]),
+                                                                        value.get("color"),
+                                                                        value.get("is_moved") == "True")
+                else:
+                    result[k] = standard_figures.get(value.get("type"))(Cell(k[0], k[1]), value.get("color"))
+        return result
 
     def get_picture(self):
         n = dt.now()
@@ -63,10 +77,10 @@ class GameBoard:
         board = i_util.get_image(self.board_picture.path)
         print("get board" + str(dt.now() - n))
         for k, v in self.figure_positions.items():
-            figure = figure_cache.get(self.figure_path.format(v))
+            figure = figure_cache.get(self.figure_path.format(v.get_str_for_file()))
             if figure is None:
-                figure = i_util.get_image(self.figure_path.format(v), need_resize=True)
-                figure_cache[self.figure_path.format(v)] = figure
+                figure = i_util.get_image(self.figure_path.format(v.get_str_for_file()), need_resize=True)
+                figure_cache[self.figure_path.format(v.get_str_for_file())] = figure
             print("get {} ".format(v) + str(dt.now() - n))
             i_util.set_position(board, figure, k)
             print("set_position {} ".format(v) + str(dt.now() - n))
@@ -93,11 +107,11 @@ class GameBoard:
     def get_figures_for_color(self, color: str) -> list:
         return [pos for pos, fig in self.figure_positions.items() if fig[0].lower() == color.lower()]
 
-    def get_figure(self, position: Cell) -> AbstractFigure:
+    def get_figure(self, position: Cell) -> AbstractFigure or None:
         figure = self.figure_positions.get(position.get_position())
         if figure is None:
-            raise FigureNotFoundException(position)
-        return standard_figures.get(figure[1])(position, figure[0])
+            return None
+        return figure
 
     def get_all_cells(self) -> List[Cell]:
         return self.all_cells
