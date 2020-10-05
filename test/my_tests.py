@@ -7,7 +7,6 @@ from telegram import Update, ParseMode, ReplyKeyboardMarkup, KeyboardButton
 from itertools import groupby
 from chess import Board, Move
 from telegram import Update, ParseMode, ReplyKeyboardMarkup, KeyboardButton
-
 chat_id = -463741226
 
 
