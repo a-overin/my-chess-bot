@@ -45,10 +45,13 @@ class AbstractGame(ABC):
             # ``1 - 0``, ``0 - 1`` or ``1 / 2 - 1 / 2``
             result = self.board.board.result()
             if result == "1 - 0":
+                logger.info("white win " + str(self.id))
                 self.dao.edit_game(self.id, GameStatuses.white_win(), end_time=dt.now())
             elif result == "0 - 1":
+                logger.info("black win " + str(self.id))
                 self.dao.edit_game(self.id, GameStatuses.black_win(), end_time=dt.now())
             else:
+                logger.info("draw " + str(self.id))
                 self.dao.edit_game(self.id, GameStatuses.draw(), end_time=dt.now())
         return True
 
@@ -63,6 +66,8 @@ class AbstractGame(ABC):
         if self.board.board.is_game_over():
             # ``1 - 0``, ``0 - 1`` or ``1 / 2 - 1 / 2``
             result = self.board.board.result()
+            print(result)
+            raise Exception("Stop")
             if result == "1 - 0":
                 return True, "White win"
             elif result == "0 - 1":

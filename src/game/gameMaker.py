@@ -21,6 +21,7 @@ class GameMaker:
 
     def get_game_for_chat_room(self, room_id: int) -> AbstractGame:
         find_game = self.game_dao.get_game_for_room(room_id)
+        print(find_game)
         if len(find_game) == 0 or find_game.get("game_status") not in (GameStatuses.created(), GameStatuses.started()):
             raise GameNotFoundException()
         table_moves_history = self.game_dao.get_table_positions(find_game.get("id"))

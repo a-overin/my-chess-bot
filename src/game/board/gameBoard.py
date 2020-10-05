@@ -75,4 +75,7 @@ class GameBoard:
         return avail_moves
 
     def get_last_move(self) -> str:
-        return str(self.board.peek())
+        if len(self.board.move_stack) > 1:
+            return str(self.board.peek())
+        else:
+            return ""

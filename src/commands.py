@@ -108,6 +108,8 @@ def make_turn(update: Update, context: CallbackContext):
             if game.board.board.is_game_over():
                 color, text = game.get_results()
                 game_maker.update_rating(update.message.chat.id, color)
+            else:
+                game = game_maker.get_game_for_chat_room(update.message.chat.id)
             text, markup = get_message_for_room(game, context, update)
             context.bot.send_photo(chat_id=update.message.chat.id,
                                    caption=text,
@@ -200,7 +202,7 @@ def error_handler(update: Update, context: CallbackContext):
 def get_message_for_room(game, context, update):
     user = context.bot.get_chat_member(update.message.chat.id, game.user_turn).user
     text = "Game id {}, turn number {}, wait user {}".format(game.id, game.turn_number, user.name)
-    text = text + "\nLast move: " + game.board.get_last_move()
+    text = text + "\nLast move: " + game.board.get_last_move() if game.board.get_last_move() != "" else text
     markup = make_keyboard(game.get_figures_for_move())
     return text, markup
 
