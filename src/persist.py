@@ -30,7 +30,6 @@ class MyPersistence(BasePersistence):
             for save_type in self.save_types:
                 cur.execute(self.sql_get, (save_type,))
                 temp = cur.fetchall()[0][0]
-                print(temp)
                 if temp is not None:
                     data[save_type] = pickle.loads(temp)
                 else:

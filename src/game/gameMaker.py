@@ -1,5 +1,6 @@
 import logging
 
+from ..user.user_service import UserService
 from .abstractGame import AbstractGame
 from .standartGame import StandardGame
 from .gameSettings import GameStatuses, GameType
@@ -14,12 +15,13 @@ logger = logging.getLogger(__name__)
 
 class GameMaker:
 
-    def __init__(self, dao=GameDao()) -> None:
+    def __init__(self, dao=GameDao(), user_service=UserService()) -> None:
         self.game_dao = dao
+        self.user_service = user_service
 
     def get_game_for_chat_room(self, room_id: int) -> AbstractGame:
         find_game = self.game_dao.get_game_for_room(room_id)
-        if len(find_game) == 0:
+        if len(find_game) == 0 or find_game.get("game_status") not in (GameStatuses.created(), GameStatuses.started()):
             raise GameNotFoundException()
         table_moves_history = self.game_dao.get_table_positions(find_game.get("id"))
         board = GameBoard(find_game.get("game_type"),
@@ -62,6 +64,16 @@ class GameMaker:
             raise ChessException("Cannot create game")
         game = self.get_game_for_chat_room(room_id)
         return game
+
+    def update_rating(self, chat_id: int, winner_color: bool):
+        users = self.game_dao.get_game_users(chat_id)
+        for user in users:
+            if winner_color is None:
+                self.user_service.change_rating(user.get("user_id"), 1)
+            elif user.get("user_color") == winner_color:
+                self.user_service.change_rating(user.get("user_id"), 10)
+            else:
+                self.user_service.change_rating(user.get("user_id"), -10)
 
     @staticmethod
     def get_user_color(users: list) -> bool:

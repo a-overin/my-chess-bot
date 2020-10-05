@@ -28,7 +28,7 @@ class GameDao:
                              "end_date = COALESCE(%s, end_date) where id = %s"
         self.sql_create_game = "insert into public.game(game_type, game_room_id, game_status) values(%s, %s, %s)" \
                                "returning id"
-        self.sql_get_game = "select * from public.game where game_room_id = %s and game_status in (0, 5)"
+        self.sql_get_game = "select * from public.game where game_room_id = %s"
         self.connect = psycopg2.connect(user=os.environ.get("db_login"),
                                         password=os.environ.get("db_password"),
                                         host=os.environ.get("db_host"),

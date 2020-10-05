@@ -59,13 +59,13 @@ class AbstractGame(ABC):
         piece = Piece.from_symbol([k for k, v in UNICODE_PIECE_SYMBOLS.items() if v == figure][0])
         return self.board.get_move_for_figure(piece)
 
-    def get_results(self) -> str:
+    def get_results(self) -> tuple:
         if self.board.board.is_game_over():
             # ``1 - 0``, ``0 - 1`` or ``1 / 2 - 1 / 2``
             result = self.board.board.result()
             if result == "1 - 0":
-                return "White win"
+                return True, "White win"
             elif result == "0 - 1":
-                return "Black win"
+                return False, "Black win"
             else:
-                return "Draw"
+                return None, "Draw"

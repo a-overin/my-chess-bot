@@ -108,7 +108,8 @@ def make_turn(update: Update, context: CallbackContext):
             game = game_maker.get_game_for_chat_room(update.message.chat.id)
             text, markup = get_message_for_room(game, context, update)
             if game.board.board.is_game_over():
-                text = game.get_results()
+                color, text = game.get_results()
+                game_maker.update_rating(update.message.chat.id, color)
             context.bot.send_photo(chat_id=update.message.chat.id,
                                    caption=text,
                                    photo=game.board.get_picture(),

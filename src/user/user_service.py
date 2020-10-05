@@ -25,3 +25,6 @@ class UserService:
     def get_user(self, telegram_id) -> UserModel:
         user = self.dao.get_user(telegram_id)
         return UserModel(user[0], user[1], user[2])
+
+    def change_rating(self, telegram_id, diff):
+        self.dao.change_rating(telegram_id, diff)
