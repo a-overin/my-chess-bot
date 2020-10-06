@@ -33,7 +33,8 @@ def main():
         fallbacks=[MessageHandler(Filters.regex('Change piece'), change_piece)],
         name="game_conv",
         persistent=True,
-        allow_reentry=True
+        allow_reentry=True,
+        per_user=False
     )
 
     # on different commands - answer in Telegram

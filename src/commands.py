@@ -4,7 +4,7 @@ import logging
 import os
 import traceback
 import numpy
-from telegram import Update, ParseMode, ReplyKeyboardMarkup, KeyboardButton
+from telegram import Update, ParseMode, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 from telegram.ext import CallbackContext
 
 from .game.abstractGame import AbstractGame
@@ -108,9 +108,10 @@ def make_turn(update: Update, context: CallbackContext):
             if game.board.board.is_game_over():
                 color, text = game.get_results()
                 game_maker.update_rating(update.message.chat.id, color)
+                markup = ReplyKeyboardRemove()
             else:
                 game = game_maker.get_game_for_chat_room(update.message.chat.id)
-            text, markup = get_message_for_room(game, context, update)
+                text, markup = get_message_for_room(game, context, update)
             context.bot.send_photo(chat_id=update.message.chat.id,
                                    caption=text,
                                    photo=game.board.get_picture(),
@@ -128,9 +129,10 @@ def start_game(update: Update, context: CallbackContext):
         context.bot.send_message(chat_id=update.message.chat.id,
                                  text=str(error))
     else:
+        text = "Game created, id = " + str(game.id) + "\n Someone need /accept_game"
         context.bot.send_message(chat_id=update.message.chat.id,
                                  reply_to_message_id=update.message.message_id,
-                                 text="Game created, id = " + str(game.id))
+                                 text=text)
 
 
 def accept_game(update: Update, context: CallbackContext):
