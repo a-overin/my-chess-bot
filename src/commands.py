@@ -24,7 +24,7 @@ def start(update: Update, context: CallbackContext):
     text = "Service unavailable"
     try:
         if service.check_user(update.message.from_user.id):
-            text = "Welcome, you are registered!"
+            text = "Welcome, you are registered! To play with this bot, u must add it to group. After that you can play with friend. /start_game"
         else:
             text = "Sorry, you are not registered!"
     except ChessException as error:
@@ -45,6 +45,7 @@ def help_command(update: Update, context: CallbackContext):
     service = UserService()
     if service.check_user(update.message.from_user.id):
         text = "Information: " + str(service.get_user(update.message.from_user.id))
+        text += '\n' + 'author: @aoverin'
     else:
         text = "Sorry, you are not registered!"
     context.bot.send_message(chat_id=update.message.chat.id,
